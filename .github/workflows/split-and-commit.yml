@@ -1,0 +1,54 @@
+name: Split and Commit Large File
+
+on:
+  workflow_dispatch:  # اجرای دستی
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download original file
+        run: |
+          curl -L https://github.com/2dust/v2rayN/releases/download/7.21.3/v2rayN-windows-64.zip -o v2rayN.zip
+
+      - name: Split file into 90MB chunks
+        run: |
+          rm -f chunks/*       # پاک کردن قطعات قبلی
+          mkdir -p chunks
+          split -b 90M v2rayN.zip chunks/part_
+          # نمایش لیست قطعات
+          ls -lh chunks/
+
+      - name: Create reassemble script (Linux/Mac)
+        run: |
+          cat > reassemble.sh << 'EOF'
+          #!/bin/bash
+          cat chunks/part_* > v2rayN-windows-64.zip
+          echo "File reassembled: v2rayN-windows-64.zip"
+          EOF
+          chmod +x reassemble.sh
+
+      - name: Create reassemble script (Windows PowerShell)
+        run: |
+          cat > reassemble.ps1 << 'EOF'
+          # PowerShell script
+          $output = "v2rayN-windows-64.zip"
+          Get-ChildItem "chunks/part_*" | Sort-Object Name | ForEach-Object {
+              Get-Content $_.FullName -AsByteStream -Raw | Add-Content $output -AsByteStream
+          }
+          Write-Host "File reassembled: $output"
+          EOF
+
+      - name: Commit and push chunks + scripts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add chunks/ reassemble.sh reassemble.ps1
+          git commit -m "Split v2rayN 7.21.3 into 90MB chunks" || echo "No changes"
+          git push
