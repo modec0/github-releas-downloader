@@ -1,29 +1,27 @@
-name: Download and Commit File
+name: Download and Create Release
 
 on:
-  workflow_dispatch:  # اجرای دستی از طریق دکمه Run workflow
-  schedule:
-    - cron: '0 0 * * 0'  # (اختیاری) هفته‌ای یک بار اجرا شود
+  workflow_dispatch:
 
 permissions:
-  contents: write  # اجازه commit به ریپو
+  contents: write
 
 jobs:
-  download:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Download file
         run: |
-          mkdir -p downloads
-          curl -L https://github.com/2dust/v2rayN/releases/download/7.21.3/v2rayN-windows-64.zip -o downloads/v2rayN-windows-64.zip
+          curl -L https://github.com/2dust/v2rayN/releases/download/7.21.3/v2rayN-windows-64.zip -o v2rayN-windows-64.zip
 
-      - name: Commit and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add downloads/v2rayN-windows-64.zip
-          git commit -m "Download v2rayN 7.21.3 windows zip" || echo "No changes to commit"
-          git push
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v7.21.3
+          name: "v2rayN 7.21.3 Windows 64-bit"
+          files: v2rayN-windows-64.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
