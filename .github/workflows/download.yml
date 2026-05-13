@@ -1,53 +1,32 @@
-name: Download, Zip, Create Release and Save Artifact
+name: Download, Zip and Save Artifact (Fixed)
 
 on:
   workflow_dispatch:
-    inputs:
-      tag_name:
-        description: 'Tag name for release (e.g., v1.0.0)'
-        required: true
-        default: 'v1.0.0'
-      release_name:
-        description: 'Release title'
-        required: true
-        default: 'melishekan-nv_01 release'
 
 permissions:
-  contents: write
-  actions: write   # برای آپلود artifact
+  actions: write   # اجباری برای آپلود Artifact در برخی سازمان‌ها
+  contents: read
 
 jobs:
-  release:
+  process:
     runs-on: ubuntu-latest
     steps:
       - name: Download file
         run: |
           curl -L https://github.com/sinavm/melishekan/releases/download/v1.0/melishekan-nv_01.npv -o melishekan-nv_01.npv
-          echo "✅ دانلود انجام شد. بررسی وجود فایل:"
-          ls -la melishekan-nv_01.npv
+          echo "✅ دانلود شد. فایل وجود دارد:"
+          ls -lh melishekan-nv_01.npv
 
-      - name: Zip the downloaded file
+      - name: Zip file
         run: |
           zip melishekan-nv_01.zip melishekan-nv_01.npv
-          echo "✅ فایل ZIP ساخته شد. بررسی:"
-          ls -la melishekan-nv_01.zip
+          echo "✅ زیپ شد. فایل زیپ:"
+          ls -lh melishekan-nv_01.zip
 
-      - name: Upload artifact (ZIP file)
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: melishekan-nv_01-zipped
+          name: melishekan-zipped
           path: melishekan-nv_01.zip
+          if-no-files-found: error
           retention-days: 7
-          if-no-files-found: error   # اگر فایل نباشد، کار متوقف می‌شود
-
-      - name: Create Release and upload zip
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.event.inputs.tag_name }}
-          name: ${{ github.event.inputs.release_name }}
-          files: melishekan-nv_01.zip
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
