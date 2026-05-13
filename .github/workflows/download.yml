@@ -1,11 +1,11 @@
-name: Download, Zip and Save Artifact (Fixed)
+name: Download, Zip, Show Content & Upload Artifact
 
 on:
   workflow_dispatch:
 
 permissions:
-  actions: write   # اجباری برای آپلود Artifact در برخی سازمان‌ها
-  contents: read
+  actions: write    # برای آپلود Artifact
+  contents: read    # برای خواندن فایل‌ها
 
 jobs:
   process:
@@ -14,16 +14,25 @@ jobs:
       - name: Download file
         run: |
           curl -L https://github.com/sinavm/melishekan/releases/download/v1.0/melishekan-nv_01.npv -o melishekan-nv_01.npv
-          echo "✅ دانلود شد. فایل وجود دارد:"
+          echo "✅ فایل دانلود شد. حجم فایل:"
           ls -lh melishekan-nv_01.npv
 
-      - name: Zip file
+      - name: Show file content as base64 (قابل کپی)
+        run: |
+          echo "📄 محتوای فایل اصلی (base64 encoded):"
+          echo "---------- شروع base64 ----------"
+          base64 melishekan-nv_01.npv
+          echo "---------- پایان base64 ----------"
+          echo "برای بازسازی فایل در کامپیوتر خود، رشته بالا (بین دو خط) را کپی کرده و با دستور زیر ذخیره کنید:"
+          echo "echo 'رشته_base64' | base64 -d > melishekan-nv_01.npv"
+
+      - name: Zip the downloaded file
         run: |
           zip melishekan-nv_01.zip melishekan-nv_01.npv
-          echo "✅ زیپ شد. فایل زیپ:"
+          echo "✅ فایل زیپ شد:"
           ls -lh melishekan-nv_01.zip
 
-      - name: Upload artifact
+      - name: Upload artifact (ZIP file)
         uses: actions/upload-artifact@v4
         with:
           name: melishekan-zipped
