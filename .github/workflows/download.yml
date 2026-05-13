@@ -1,27 +1,17 @@
-name: Download and Create Release
+name: Download file
 
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  release:
+  download:
     runs-on: ubuntu-latest
     steps:
       - name: Download file
         run: |
-          curl -L https://github.com/sinavm/melishekan/releases/download/v1.0/melishekan-nv_01.npv -o melishekan-nv_01.zip
-
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
+          curl -L https://github.com/sinavm/melishekan/releases/download/v1.0/melishekan-nv_01.npv -o melishekan-nv_01.npv
+      - name: Upload artifact (optional)
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v7.21.3
-          name: "v2rayN 7.21.3 Windows 64-bit"
-          files: v2rayN-windows-64.zip
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: downloaded-file
+          path: melishekan-nv_01.npv
