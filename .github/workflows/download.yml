@@ -1,4 +1,4 @@
-name: Download and Create Release
+name: Download, Zip and Create Release
 
 on:
   workflow_dispatch:
@@ -23,13 +23,17 @@ jobs:
         run: |
           curl -L https://github.com/sinavm/melishekan/releases/download/v1.0/melishekan-nv_01.npv -o melishekan-nv_01.npv
 
-      - name: Create Release
+      - name: Zip the downloaded file
+        run: |
+          zip melishekan-nv_01.zip melishekan-nv_01.npv
+
+      - name: Create Release and upload zip
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.tag_name }}
           name: ${{ github.event.inputs.release_name }}
-          files: melishekan-nv_01.npv   # فایل دانلود شده
+          files: melishekan-nv_01.zip   # آپلود فایل ZIP
           draft: false
           prerelease: false
         env:
