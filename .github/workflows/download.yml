@@ -1,4 +1,4 @@
-name: Download, Zip and Create Release
+name: Download, Zip, Create Release and Save Artifact
 
 on:
   workflow_dispatch:
@@ -27,13 +27,20 @@ jobs:
         run: |
           zip melishekan-nv_01.zip melishekan-nv_01.npv
 
+      - name: Upload artifact (ZIP file)
+        uses: actions/upload-artifact@v4
+        with:
+          name: melishekan-nv_01-zipped
+          path: melishekan-nv_01.zip
+          retention-days: 7   # مدت نگهداری artifact (اختیاری)
+
       - name: Create Release and upload zip
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.tag_name }}
           name: ${{ github.event.inputs.release_name }}
-          files: melishekan-nv_01.zip   # آپلود فایل ZIP
+          files: melishekan-nv_01.zip
           draft: false
           prerelease: false
         env:
